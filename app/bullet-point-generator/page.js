@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import SeoContent from "../components/Seo-contant";
 import { useState } from "react";
 
 const tabs = [
@@ -194,6 +195,9 @@ export default function BulletPointGenerator() {
             </div>
           </div>
         )}
+      </div>
+       <div className="mt-50">
+        <SeoContent />
       </div>
     </main>
   );

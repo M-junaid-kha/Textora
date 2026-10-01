@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import SeoContent from "./components/Seo-contant";
 
 const tabs = [
   { name: "Summarizer", href: "/" },
@@ -133,7 +134,7 @@ export default function Home() {
     length <= 33 ? "Short" : length <= 66 ? "Medium" : "Long";
 
   return (
-    <main className="min-h-screen bg-[#FBF8ED] px-4 py-10 sm:py-14">
+    <main className="min-h-screen bg-[#FBF8ED] px-4 py-10 sm:py-14 ">
       {/* Error Popup */}
       {error && (
         <div className="fixed right-5 top-5 z-50 w-[calc(100%-40px)] max-w-sm">
@@ -375,6 +376,10 @@ export default function Home() {
           }
         }
       `}</style>
+      <div className="mt-50">
+  <SeoContent />
+</div>
     </main>
+    
   );
 }

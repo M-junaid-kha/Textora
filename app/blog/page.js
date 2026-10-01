@@ -1,21 +1,42 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 
+export const dynamic = "force-dynamic";
+
 export default async function BlogPage() {
   const supabase = createClient();
 
   const { data: blogs, error } = await supabase
     .from("blogs")
-    .select("*")
+    .select(
+      "id, title, slug, description, cover_image, category, created_at"
+    )
     .order("created_at", { ascending: false });
 
   if (error) {
     console.error("Blog loading error:", error);
+
+    return (
+      <main className="min-h-screen bg-[#FBF8ED] px-4 py-12">
+        <div className="mx-auto max-w-4xl">
+          <div className="rounded-2xl border border-red-200 bg-red-50 p-6">
+            <h1 className="text-xl font-semibold text-red-800">
+              Could not load blogs
+            </h1>
+
+            <p className="mt-2 text-sm text-red-700">
+              {error.message}
+            </p>
+          </div>
+        </div>
+      </main>
+    );
   }
 
   return (
     <main className="min-h-screen bg-[#FBF8ED] px-4 py-12">
       <div className="mx-auto max-w-6xl">
+
         {/* Header */}
         <div className="text-center">
           <p className="text-sm font-medium uppercase tracking-wider text-[#5A6B2F]">
@@ -32,7 +53,7 @@ export default async function BlogPage() {
           </p>
         </div>
 
-        {/* Blog list */}
+        {/* Blog cards */}
         {blogs && blogs.length > 0 ? (
           <div className="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {blogs.map((blog) => {
@@ -50,7 +71,7 @@ export default async function BlogPage() {
                   href={`/blog/${blog.slug}`}
                   className="group overflow-hidden rounded-2xl border border-[#E4DBB8] bg-[#FDFBF3] shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg"
                 >
-                  {/* Cover image */}
+                  {/* Image */}
                   {blog.cover_image ? (
                     <div className="h-48 overflow-hidden bg-[#F5EFD6]">
                       <img
@@ -67,7 +88,7 @@ export default async function BlogPage() {
                     </div>
                   )}
 
-                  {/* Card content */}
+                  {/* Content */}
                   <div className="p-6">
                     {blog.category && (
                       <span className="inline-block rounded-full bg-[#EFE6C4] px-3 py-1 text-xs font-medium text-[#5A6B2F]">
@@ -75,7 +96,7 @@ export default async function BlogPage() {
                       </span>
                     )}
 
-                    <h2 className="mt-4 line-clamp-2 text-xl font-semibold leading-7 text-[#2F3620] transition-colors group-hover:text-[#5A6B2F]">
+                    <h2 className="mt-4 line-clamp-2 text-xl font-semibold leading-7 text-[#2F3620] group-hover:text-[#5A6B2F]">
                       {blog.title}
                     </h2>
 

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
 const tools = [
@@ -62,6 +62,7 @@ const tools = [
 
 const links = [
   { name: "Blog", href: "/blog" },
+ 
   { name: "Contact", href: "/contact" },
   { name: "Privacy", href: "/privacy" },
 ];
@@ -121,6 +122,7 @@ export default function Navbar() {
   const [toolsOpen, setToolsOpen] = useState(false);
   const [mobileToolsOpen, setMobileToolsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [progress, setProgress] = useState(0);
 
   const [user, setUser] = useState(null);
   const [isAuthor, setIsAuthor] = useState(false);
@@ -128,7 +130,8 @@ export default function Navbar() {
 
   const dropdownRef = useRef(null);
 
-  const supabase = createClient();
+  // Create the client once instead of on every render
+  const supabase = useMemo(() => createClient(), []);
 
   // Check logged-in user
   useEffect(() => {
@@ -174,7 +177,7 @@ export default function Navbar() {
       mounted = false;
       subscription.unsubscribe();
     };
-  }, []);
+  }, [supabase]);
 
   // Logout
   async function handleLogout() {
@@ -191,13 +194,19 @@ export default function Navbar() {
     setMobileToolsOpen(false);
   }, [pathname]);
 
-  // Shadow on scroll
+  // Shadow + scroll progress
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 8);
+    const onScroll = () => {
+      setScrolled(window.scrollY > 8);
+
+      const max =
+        document.documentElement.scrollHeight - window.innerHeight;
+      setProgress(max > 0 ? Math.min(window.scrollY / max, 1) : 0);
+    };
 
     onScroll();
 
-    window.addEventListener("scroll", onScroll);
+    window.addEventListener("scroll", onScroll, { passive: true });
 
     return () => {
       window.removeEventListener("scroll", onScroll);
@@ -256,6 +265,15 @@ export default function Navbar() {
           : "border-transparent bg-[#FBF8ED]"
       }`}
     >
+      {/* Scroll progress */}
+      <div
+        aria-hidden="true"
+        className={`pointer-events-none absolute inset-x-0 bottom-0 h-0.5 origin-left bg-gradient-to-r from-[#5A6B2F] via-[#B8923A] to-[#5A6B2F] transition-opacity duration-300 ${
+          scrolled ? "opacity-100" : "opacity-0"
+        }`}
+        style={{ transform: `scaleX(${progress})` }}
+      />
+
       <nav className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6 lg:px-8">
         {/* Logo */}
         <Link

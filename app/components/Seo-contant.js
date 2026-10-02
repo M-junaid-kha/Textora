@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { useEffect, useRef, useState } from "react";
 
 const highlights = [
   { title: "Smart Summaries", desc: "Summarize text and documents" },
@@ -109,10 +112,52 @@ const faqs = [
   },
 ];
 
-function SectionHeading({ title, subtitle }) {
+// Slide-up + fade when scrolled into view
+function Reveal({ children, delay = 0, className = "" }) {
+  const ref = useRef(null);
+  const [show, setShow] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setShow(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.12 }
+    );
+
+    observer.observe(el);
+
+    return () => observer.disconnect();
+  }, []);
+
   return (
-    <div className="text-center">
-      <h2 className="text-2xl font-semibold tracking-tight text-[#2F3620] sm:text-3xl">
+    <div
+      ref={ref}
+      style={{ transitionDelay: `${delay}ms` }}
+      className={`transition-all duration-700 ease-out ${
+        show ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"
+      } ${className}`}
+    >
+      {children}
+    </div>
+  );
+}
+
+function SectionHeading({ eyebrow, title, subtitle }) {
+  return (
+    <Reveal className="text-center">
+      {eyebrow && (
+        <span className="inline-block rounded-full bg-[#EFE6C4] px-3 py-1 text-xs font-medium text-[#5A6B2F]">
+          {eyebrow}
+        </span>
+      )}
+      <h2 className="mt-3 text-2xl font-semibold tracking-tight text-[#2F3620] sm:text-3xl">
         {title}
       </h2>
       {subtitle && (
@@ -120,45 +165,57 @@ function SectionHeading({ title, subtitle }) {
           {subtitle}
         </p>
       )}
-    </div>
+      <div className="mx-auto mt-4 h-1 w-12 rounded-full bg-gradient-to-r from-[#5A6B2F] to-[#B8923A]" />
+    </Reveal>
   );
 }
 
+const cardBase =
+  "rounded-2xl border border-[#E4DBB8] bg-[#FDFBF3] transition-all duration-300 hover:-translate-y-1.5 hover:border-[#C9BE8F] hover:shadow-xl hover:shadow-[#3F4A22]/10";
+
 export default function SeoContent() {
   return (
-    <section className="bg-[#FBF8ED] px-4 pb-16 pt-4 sm:pb-20">
-      <div className="mx-auto max-w-5xl space-y-16 sm:space-y-20">
+    <section className="relative px-4 pb-16 pt-4 sm:pb-20">
+      <div className="mx-auto max-w-5xl space-y-20 sm:space-y-28">
         {/* Intro */}
         <div className="text-center">
-          <h2 className="text-2xl font-semibold tracking-tight text-[#2F3620] sm:text-3xl">
-            AI Text Summarizer
-          </h2>
-          <div className="mx-auto mt-4 max-w-3xl space-y-3 text-sm leading-7 text-[#5F6444] sm:text-base">
-            <p>
-              The Textora AI Text Summarizer shortens your text while
-              preserving all the main points it contains. It keeps the
-              accuracy and the original context of your writing, so you get a
-              summary you can trust.
-            </p>
-            <p>
-              You can generate summaries for any type of content, including
-              essays, blogs, articles, research papers, reports and large
-              documents. Just enter your text, click Summarize and get a clear
-              summary for free.
-            </p>
-          </div>
+          <Reveal>
+            <h2 className="text-2xl font-semibold tracking-tight text-[#2F3620] sm:text-3xl">
+              AI Text{" "}
+              <span className="bg-gradient-to-r from-[#5A6B2F] via-[#B8923A] to-[#5A6B2F] bg-[length:200%_auto] bg-clip-text text-transparent">
+                Summarizer
+              </span>
+            </h2>
+          </Reveal>
+
+          <Reveal delay={100}>
+            <div className="mx-auto mt-4 max-w-3xl space-y-3 text-sm leading-7 text-[#5F6444] sm:text-base">
+              <p>
+                The Textora AI Text Summarizer shortens your text while
+                preserving all the main points it contains. It keeps the
+                accuracy and the original context of your writing, so you get
+                a summary you can trust.
+              </p>
+              <p>
+                You can generate summaries for any type of content, including
+                essays, blogs, articles, research papers, reports and large
+                documents. Just enter your text, click Summarize and get a
+                clear summary for free.
+              </p>
+            </div>
+          </Reveal>
 
           <div className="mt-8 grid gap-4 sm:grid-cols-3">
-            {highlights.map((h) => (
-              <div
-                key={h.title}
-                className="rounded-2xl border border-[#E4DBB8] bg-[#FDFBF3] px-5 py-5"
-              >
-                <p className="text-sm font-semibold text-[#2F3620]">
-                  {h.title}
-                </p>
-                <p className="mt-1 text-sm text-[#7A7F5C]">{h.desc}</p>
-              </div>
+            {highlights.map((h, i) => (
+              <Reveal key={h.title} delay={i * 120}>
+                <div className={`${cardBase} group px-5 py-6`}>
+                  <span className="mx-auto mb-3 block h-1.5 w-8 rounded-full bg-[#5A6B2F] transition-all duration-300 group-hover:w-14" />
+                  <p className="text-sm font-semibold text-[#2F3620]">
+                    {h.title}
+                  </p>
+                  <p className="mt-1 text-sm text-[#7A7F5C]">{h.desc}</p>
+                </div>
+              </Reveal>
             ))}
           </div>
         </div>
@@ -166,26 +223,29 @@ export default function SeoContent() {
         {/* How to */}
         <div>
           <SectionHeading
+            eyebrow="Getting started"
             title="How to Summarize Text?"
             subtitle="Follow these simple steps to summarize your text with Textora."
           />
 
-          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="relative mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {/* Connecting line */}
+            <div className="pointer-events-none absolute left-[12%] right-[12%] top-[38px] hidden h-px bg-gradient-to-r from-transparent via-[#C9BE8F] to-transparent lg:block" />
+
             {steps.map((step, i) => (
-              <div
-                key={step.title}
-                className="rounded-2xl border border-[#E4DBB8] bg-[#FDFBF3] p-5"
-              >
-                <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#5A6B2F] text-sm font-semibold text-[#FBF8ED]">
-                  {String(i + 1).padStart(2, "0")}
-                </span>
-                <h3 className="mt-4 text-sm font-semibold text-[#2F3620]">
-                  {step.title}
-                </h3>
-                <p className="mt-1 text-sm leading-6 text-[#7A7F5C]">
-                  {step.desc}
-                </p>
-              </div>
+              <Reveal key={step.title} delay={i * 120}>
+                <div className={`${cardBase} group relative h-full p-5`}>
+                  <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#5A6B2F] text-sm font-semibold text-[#FBF8ED] shadow-md shadow-[#5A6B2F]/25 transition-all duration-300 group-hover:-rotate-6 group-hover:scale-110">
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                  <h3 className="mt-4 text-sm font-semibold text-[#2F3620]">
+                    {step.title}
+                  </h3>
+                  <p className="mt-1 text-sm leading-6 text-[#7A7F5C]">
+                    {step.desc}
+                  </p>
+                </div>
+              </Reveal>
             ))}
           </div>
         </div>
@@ -193,24 +253,28 @@ export default function SeoContent() {
         {/* Features */}
         <div>
           <SectionHeading
+            eyebrow="Features"
             title="Features of the AI Summarizer"
             subtitle="Everything you need to turn long content into short, clear summaries."
           />
 
-          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {features.map((f) => (
-              <div
-                key={f.title}
-                className="rounded-2xl border border-[#E4DBB8] bg-[#FDFBF3] p-5"
-              >
-                <div className="mb-3 h-1 w-8 rounded-full bg-[#5A6B2F]" />
-                <h3 className="text-sm font-semibold text-[#2F3620]">
-                  {f.title}
-                </h3>
-                <p className="mt-1 text-sm leading-6 text-[#7A7F5C]">
-                  {f.desc}
-                </p>
-              </div>
+          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {features.map((f, i) => (
+              <Reveal key={f.title} delay={(i % 3) * 120}>
+                <div className={`${cardBase} group relative h-full overflow-hidden p-5`}>
+                  <div className="pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full bg-[#EFE6C4] opacity-0 transition-all duration-500 group-hover:scale-150 group-hover:opacity-70" />
+
+                  <div className="relative">
+                    <div className="mb-3 h-1 w-8 rounded-full bg-[#5A6B2F] transition-all duration-300 group-hover:w-16" />
+                    <h3 className="text-sm font-semibold text-[#2F3620] transition-colors duration-300 group-hover:text-[#5A6B2F]">
+                      {f.title}
+                    </h3>
+                    <p className="mt-1 text-sm leading-6 text-[#7A7F5C]">
+                      {f.desc}
+                    </p>
+                  </div>
+                </div>
+              </Reveal>
             ))}
           </div>
         </div>
@@ -218,122 +282,148 @@ export default function SeoContent() {
         {/* Other tools */}
         <div>
           <SectionHeading
+            eyebrow="More tools"
             title="Explore More Textora Tools"
             subtitle="Write, rewrite and refine your text with the rest of the toolkit."
           />
 
-          <div className="mt-8 grid gap-4 md:grid-cols-3">
-            {tools.map((tool) => (
-              <Link
-                key={tool.href}
-                href={tool.href}
-                className="group rounded-2xl border border-[#E4DBB8] bg-[#FDFBF3] p-5 transition-colors hover:border-[#5A6B2F]"
-              >
-                <h3 className="text-sm font-semibold text-[#2F3620]">
-                  {tool.name}
-                </h3>
-                <p className="mt-1 text-sm leading-6 text-[#7A7F5C]">
-                  {tool.desc}
-                </p>
-                <span className="mt-3 inline-block text-sm font-medium text-[#5A6B2F]">
-                  Try it{" "}
-                  <span className="inline-block transition-transform group-hover:translate-x-1">
-                    →
+          <div className="mt-10 grid gap-4 md:grid-cols-3">
+            {tools.map((tool, i) => (
+              <Reveal key={tool.href} delay={i * 120}>
+                <Link
+                  href={tool.href}
+                  className={`${cardBase} group block h-full p-5 hover:border-[#5A6B2F]`}
+                >
+                  <h3 className="text-sm font-semibold text-[#2F3620] transition-colors duration-300 group-hover:text-[#5A6B2F]">
+                    {tool.name}
+                  </h3>
+                  <p className="mt-1 text-sm leading-6 text-[#7A7F5C]">
+                    {tool.desc}
+                  </p>
+                  <span className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-[#5A6B2F]">
+                    Try it
+                    <span className="inline-block transition-transform duration-300 group-hover:translate-x-1.5">
+                      →
+                    </span>
                   </span>
-                </span>
-              </Link>
+                </Link>
+              </Reveal>
             ))}
           </div>
         </div>
 
         {/* Why + how it works */}
-        <div className="grid gap-8 md:grid-cols-2">
-          <div className="rounded-2xl border border-[#E4DBB8] bg-[#FDFBF3] p-6 sm:p-8">
-            <h2 className="text-xl font-semibold tracking-tight text-[#2F3620]">
-              Why Is Our Summarizer Useful?
-            </h2>
-            <ul className="mt-4 space-y-3">
-              {reasons.map((r) => (
-                <li
-                  key={r}
-                  className="flex items-start gap-3 text-sm leading-6 text-[#5F6444]"
-                >
-                  <svg
-                    className="mt-1 h-4 w-4 shrink-0 text-[#5A6B2F]"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
+        <div className="grid gap-6 md:grid-cols-2">
+          <Reveal>
+            <div className={`${cardBase} h-full p-6 sm:p-8`}>
+              <h2 className="text-xl font-semibold tracking-tight text-[#2F3620]">
+                Why Is Our Summarizer Useful?
+              </h2>
+              <ul className="mt-5 space-y-3">
+                {reasons.map((r, i) => (
+                  <li
+                    key={r}
+                    style={{ animationDelay: `${i * 80}ms` }}
+                    className="group/item flex items-start gap-3 text-sm leading-6 text-[#5F6444] transition-transform duration-300 hover:translate-x-1"
                   >
-                    <path
-                      d="M5 13l4 4L19 7"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                  {r}
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div className="rounded-2xl border border-[#E4DBB8] bg-[#FDFBF3] p-6 sm:p-8">
-            <h2 className="text-xl font-semibold tracking-tight text-[#2F3620]">
-              How Does the Summarizer Work?
-            </h2>
-            <div className="mt-4 space-y-3 text-sm leading-7 text-[#5F6444]">
-              <p>
-                Textora uses an AI-based approach that first reads your text
-                and identifies the sentences and ideas that matter most. It
-                then understands how those ideas connect to the rest of the
-                content.
-              </p>
-              <p>
-                Using modern language models, it rewrites those key ideas into
-                a shorter version that follows the length you selected, so the
-                summary stays accurate, clear and easy to read.
-              </p>
+                    <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#EFE6C4] text-[#5A6B2F] transition-all duration-300 group-hover/item:scale-110 group-hover/item:bg-[#5A6B2F] group-hover/item:text-[#FBF8ED]">
+                      <svg
+                        className="h-3 w-3"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="3"
+                      >
+                        <path
+                          d="M5 13l4 4L19 7"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    </span>
+                    {r}
+                  </li>
+                ))}
+              </ul>
             </div>
-          </div>
+          </Reveal>
+
+          <Reveal delay={150}>
+            <div className={`${cardBase} h-full p-6 sm:p-8`}>
+              <h2 className="text-xl font-semibold tracking-tight text-[#2F3620]">
+                How Does the Summarizer Work?
+              </h2>
+              <div className="mt-5 space-y-3 text-sm leading-7 text-[#5F6444]">
+                <p>
+                  Textora uses an AI-based approach that first reads your text
+                  and identifies the sentences and ideas that matter most. It
+                  then understands how those ideas connect to the rest of the
+                  content.
+                </p>
+                <p>
+                  Using modern language models, it rewrites those key ideas
+                  into a shorter version that follows the length you selected,
+                  so the summary stays accurate, clear and easy to read.
+                </p>
+              </div>
+            </div>
+          </Reveal>
         </div>
 
         {/* FAQ */}
         <div>
           <SectionHeading
+            eyebrow="FAQ"
             title="Frequently Asked Questions"
             subtitle="Quick answers to common questions about Textora and its features."
           />
 
-          <div className="mx-auto mt-8 max-w-3xl space-y-3">
-            {faqs.map((item) => (
-              <details
-                key={item.q}
-                className="group rounded-xl border border-[#E4DBB8] bg-[#FDFBF3] px-5 py-4"
-              >
-                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-sm font-medium text-[#2F3620] [&::-webkit-details-marker]:hidden">
-                  {item.q}
-                  <svg
-                    className="h-4 w-4 shrink-0 text-[#7A7F5C] transition-transform duration-200 group-open:rotate-180"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                  >
-                    <path
-                      d="M6 9l6 6 6-6"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </summary>
-                <p className="mt-3 text-sm leading-7 text-[#7A7F5C]">
-                  {item.a}
-                </p>
-              </details>
+          <div className="mx-auto mt-10 max-w-3xl space-y-3">
+            {faqs.map((item, i) => (
+              <Reveal key={item.q} delay={i * 70}>
+                <details className="group rounded-xl border border-[#E4DBB8] bg-[#FDFBF3] px-5 py-4 transition-all duration-300 hover:border-[#C9BE8F] hover:shadow-md hover:shadow-[#3F4A22]/5 open:border-[#5A6B2F]/50 open:shadow-md open:shadow-[#3F4A22]/5">
+                  <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-sm font-medium text-[#2F3620] transition-colors duration-300 group-hover:text-[#5A6B2F] [&::-webkit-details-marker]:hidden">
+                    {item.q}
+                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#EFE6C4] text-[#5A6B2F] transition-all duration-300 group-open:rotate-180 group-open:bg-[#5A6B2F] group-open:text-[#FBF8ED]">
+                      <svg
+                        className="h-3.5 w-3.5"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2.5"
+                      >
+                        <path
+                          d="M6 9l6 6 6-6"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    </span>
+                  </summary>
+
+                  <p className="mt-3 animate-[seoDown_0.35s_ease-out_both] text-sm leading-7 text-[#7A7F5C]">
+                    {item.a}
+                  </p>
+                </details>
+              </Reveal>
             ))}
           </div>
         </div>
       </div>
+
+      <style>{`
+        @keyframes seoDown {
+          from { opacity: 0; transform: translateY(-6px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          * {
+            animation-duration: 0.01ms !important;
+            transition-duration: 0.01ms !important;
+          }
+        }
+      `}</style>
     </section>
   );
 }

@@ -4,7 +4,7 @@ import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
 // TODO: update before publishing
-const CONTACT_EMAIL = "support@yourdomain.com";
+const CONTACT_EMAIL = "m.junaidkhanyt@gmail.com";
 
 const inputClass =
   "w-full rounded-xl border border-[#E4DBB8] bg-[#FBF8ED] px-4 py-3 text-sm text-[#2F3620] outline-none transition-all duration-200 placeholder:text-[#7A7F5C]/60 hover:border-[#C9BE8F] focus:border-[#5A6B2F] focus:bg-[#FDFBF3] focus:ring-4 focus:ring-[#5A6B2F]/10";
